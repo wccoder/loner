@@ -9,6 +9,13 @@ class MortgageCalculator
   AMORTIZATION_MAX        = 25
   VALID_PAYMENT_SCHEDULES = [12, 26, 52].freeze
 
+  # @TODO: Stick this in a yaml/config file somewhere
+  INSURANCE_RATES = [
+    { min: 500, max: 999, rate: 315 },
+    { min: 1000, max: 1499, rate: 240 },
+    { min: 1500, max: 1999, rate: 180 }
+  ].freeze
+
   attr_accessor :amortization_period, :payment_schedule, :interest_rate
 
   validates :amortization_period,
@@ -26,6 +33,14 @@ class MortgageCalculator
                             less_than_or_equal_to: 10_000 }
 
   validate :validate_payment_schedule
+
+  def self.insurance_rate(asking, down)
+    percentage = ((down.to_f / asking) * 100.0 * 100.0).to_i
+    INSURANCE_RATES.each do |rate|
+      return rate[:rate] if percentage >= rate[:min] && percentage <= rate[:max]
+    end
+    0
+  end
 
   private
 

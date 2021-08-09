@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 
 class PaymentAmountCalculator < MortgageCalculator
-  include InsuredMortgage
-
-  DOWN_PAYMENT_FIRST_PERCENTAGE_AS_DECIMAL = 0.05
-  DOWN_PAYMENT_FIRST_LIMIT                 = 50_000_000 # $500_000 in cents
-  DOWN_PAYMENT_REST_PERCENTAGE_AS_DECIMAL  = 0.10
-  ASKING_PRICE_MAX                         = 99_900_000_000 # $999 million in cents
+  DOWN_PAYMENT_FIRST_PERCENTAGE = 5
+  DOWN_PAYMENT_FIRST_LIMIT      = 50_000_000 # $500_000 in cents
+  DOWN_PAYMENT_REST_PERCENTAGE  = 10
+  ASKING_PRICE_MAX              = 99_900_000_000 # $999 million in cents
 
   attr_accessor :asking_price, :down_payment
 
@@ -31,8 +29,8 @@ class PaymentAmountCalculator < MortgageCalculator
   private
 
   def down_payment_minimum
-    first_chunk = DOWN_PAYMENT_FIRST_PERCENTAGE_AS_DECIMAL * [DOWN_PAYMENT_FIRST_LIMIT, asking_price].min
-    rest = DOWN_PAYMENT_REST_PERCENTAGE_AS_DECIMAL * [0, asking_price - DOWN_PAYMENT_FIRST_LIMIT].max
+    first_chunk = (DOWN_PAYMENT_FIRST_PERCENTAGE / 100.0) * [DOWN_PAYMENT_FIRST_LIMIT, asking_price].min
+    rest = (DOWN_PAYMENT_REST_PERCENTAGE / 100.0) * [0, asking_price - DOWN_PAYMENT_FIRST_LIMIT].max
 
     (first_chunk + rest).to_i
   end
@@ -51,7 +49,7 @@ class PaymentAmountCalculator < MortgageCalculator
   end
 
   def insurance_amount
-    insurance_rate = integer_percentage_to_decimal(insurance_rate(asking_price, down_payment))
+    insurance_rate = integer_percentage_to_decimal(MortgageCalculator.insurance_rate(asking_price, down_payment))
     ((asking_price - down_payment) * insurance_rate).to_i
   end
 

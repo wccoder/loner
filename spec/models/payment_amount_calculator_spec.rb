@@ -87,23 +87,6 @@ RSpec.describe PaymentAmountCalculator, type: :model do
     end
   end
 
-  context '.insurance_rate' do
-    context 'when insurance is required' do
-      # @TODO: Rates themselves should really be specified in a YAML file
-      [
-        [100_000, 9_999, 315],
-        [100, 10, 240],
-        [10_000, 1499, 240],
-        [10_000, 1500, 180],
-        [100, 20, 0]
-      ].each do |data|
-        it 'should return the expected mortgage insurance rate' do
-          expect(subject.insurance_rate(data[0], data[1])).to eq(data[2])
-        end
-      end
-    end
-  end
-
   context '.payment_amount' do
     shared_examples_for 'it gives the correct recurring payment amount' do |options|
       let(:amortization_period) { options[:amortization] }
@@ -119,12 +102,12 @@ RSpec.describe PaymentAmountCalculator, type: :model do
 
     # @TODO: Move to a fixture or factory
     [
-      { amortization: 25, schedule: 52, rate: 250, price: 75_000_000, down: 5_000_000, expected: 74708 },
-      { amortization: 25, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 323923 },
-      { amortization:  5, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 1281448 },
-      { amortization:  6, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 1080982 },
-      { amortization: 25, schedule: 26, rate: 145, price: 200_000_000, down: 100_000_000, expected: 183454 }, # no ins
-      { amortization: 25, schedule: 12, rate: 145, price: 200_000_000, down: 100_000_000, expected: 397591 }, # no ins
+      { amortization: 25, schedule: 52, rate: 250, price: 75_000_000, down: 5_000_000, expected: 74_708 },
+      { amortization: 25, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 323_923 },
+      { amortization:  5, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 1_281_448 },
+      { amortization:  6, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 1_080_982 },
+      { amortization: 25, schedule: 26, rate: 145, price: 200_000_000, down: 100_000_000, expected: 183_454 }, # no ins
+      { amortization: 25, schedule: 12, rate: 145, price: 200_000_000, down: 100_000_000, expected: 397_591 } # no ins
     ].each do |fixture|
       it_behaves_like 'it gives the correct recurring payment amount', fixture
     end
