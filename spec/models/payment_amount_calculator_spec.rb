@@ -77,10 +77,10 @@ RSpec.describe PaymentAmountCalculator, type: :model do
 
     context 'with valid asking/down combinations' do
       [
-        [50_000_000, 2_500_000]
-        # [100_000, 10_000],
-        # [75_000_000, 5_000_000],
-        # [100_000_000, 50_000_000]
+        [50_000_000, 2_500_000],
+        [100_000, 10_000],
+        [75_000_000, 5_000_000],
+        [100_000_000, 50_000_000]
       ].each do |combination|
         it_behaves_like 'a valid calculator', combination[0], combination[1]
       end

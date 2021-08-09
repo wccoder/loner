@@ -12,6 +12,7 @@ class CalculatorController < ApplicationController
     params = payment_amount_params
     params[:interest_rate] = InterestRate.get
     calculator = PaymentAmountCalculator.new(params)
+
     if calculator.valid?
       success({ payment_amount: calculator.payment_amount })
     else
@@ -20,7 +21,15 @@ class CalculatorController < ApplicationController
   end
 
   def mortgage_amount
-    success
+    params = mortgage_amount_params
+    params[:interest_rate] = InterestRate.get
+    calculator = MortgageAmountCalculator.new(params)
+
+    if calculator.valid?
+      success({ maximum_mortgage: calculator.maximum_mortgage })
+    else
+      error(calculator.errors)
+    end
   end
 
   def interest_rate
@@ -42,7 +51,15 @@ class CalculatorController < ApplicationController
     render json: { status: STATUS_ERROR, errors: errors }, status: :unprocessable_entity
   end
 
+  def common_params
+    %i[payment_schedule amortization_period]
+  end
+
   def payment_amount_params
-    params.permit(:asking_price, :down_payment, :payment_schedule, :amortization_period)
+    params.permit(common_params + %i[asking_price down_payment])
+  end
+
+  def mortgage_amount_params
+    params.permit(common_params + [:payment_amount])
   end
 end
