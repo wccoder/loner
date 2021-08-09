@@ -87,25 +87,6 @@ RSpec.describe PaymentAmountCalculator, type: :model do
     end
   end
 
-  context '.down_payment_minimum' do
-    shared_examples_for 'it gives the correct minimum down payment' do |asking, expected|
-      let(:asking_price) { asking }
-
-      it 'gives the correct minimum down payment for the given asking price' do
-        expect(subject.down_payment_minimum).to eq(expected)
-      end
-    end
-
-    [
-      [50_000_000, 2_500_000],
-      [100_000, 5_000],
-      [75_000_000, 5_000_000],
-      [100_000_000, 7_500_000]
-    ].each do |combination|
-      it_behaves_like 'it gives the correct minimum down payment', combination[0], combination[1]
-    end
-  end
-
   context '.insurance_rate' do
     context 'when insurance is required' do
       # @TODO: Rates themselves should really be specified in a YAML file

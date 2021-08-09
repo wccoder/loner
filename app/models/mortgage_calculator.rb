@@ -7,7 +7,7 @@ class MortgageCalculator
   CENTS_VALUE_MIN         = 100 # minimum of $1
   AMORTIZATION_MIN        = 5
   AMORTIZATION_MAX        = 25
-  VALID_PAYMENT_SCHEDULES = [12, 26, 52]
+  VALID_PAYMENT_SCHEDULES = [12, 26, 52].freeze
 
   attr_accessor :amortization_period, :payment_schedule, :interest_rate
 
@@ -29,13 +29,21 @@ class MortgageCalculator
 
   private
 
+  def total_payments
+    amortization_period.to_i * payment_schedule.to_i
+  end
+
+  def interest_per_period
+    (integer_percentage_to_decimal(interest_rate) / payment_schedule.to_d)
+  end
+
   def integer_percentage_to_decimal(percentage)
-    (percentage.to_d/(100.0*100.0))
+    (percentage.to_d / (100.0 * 100.0))
   end
 
   def validate_payment_schedule
     return if VALID_PAYMENT_SCHEDULES.include?(payment_schedule.to_i)
 
-    errors.add(:payment_schedule, 'must be one of: ' + VALID_PAYMENT_SCHEDULES.join(' '))
+    errors.add(:payment_schedule, "must be one of: #{VALID_PAYMENT_SCHEDULES.join(' ')}")
   end
 end
