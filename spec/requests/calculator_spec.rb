@@ -66,4 +66,42 @@ RSpec.describe 'Calculators', type: :request do
       end
     end
   end
+
+  describe 'GET /payment-amount' do
+    before(:all) { Rails.cache.delete(InterestRate::RATE_KEY) }
+
+    context 'when a required parameter is missing' do
+      params =
+            {
+                      asking_price: 200_000_000,
+      payment_schedule: 12,
+      amortization_period: 25,
+      down_payment: 100_000_000,
+    }
+
+      [
+        :asking_price,
+        :payment_schedule,
+        :amortization_period,
+        :down_payment
+      ].each do |missing|
+        it_behaves_like 'a failed request', :get, '/payment-amount', params.except(missing)
+      end
+    end
+
+    context 'when all parameters are sent' do
+      params =
+            {
+                      asking_price: 200_000_000,
+      payment_schedule: 12,
+      amortization_period: 25,
+      down_payment: 100_000_000,
+    }
+    expected = {
+      'payment_amount' => 448616
+    }
+
+      it_behaves_like 'a successful request', :get, '/payment-amount', params, expected
+    end
+  end
 end
