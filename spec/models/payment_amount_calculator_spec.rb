@@ -96,7 +96,7 @@ RSpec.describe PaymentAmountCalculator, type: :model do
       let(:down_payment) { options[:down] }
 
       it 'returns the correct payment amount' do
-        expect(subject.payment_amount).to eq(options[:expected])
+        expect(subject.calculated_value).to eq(options[:expected])
       end
     end
 
@@ -106,6 +106,7 @@ RSpec.describe PaymentAmountCalculator, type: :model do
       { amortization: 25, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 323_923 },
       { amortization:  5, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 1_281_448 },
       { amortization:  6, schedule: 12, rate: 250, price: 75_000_000, down: 5_000_000, expected: 1_080_982 },
+      { amortization: 20, schedule: 26, rate: 151, price: 75_000_000, down: 5_000_000, expected: 160_916 },
       { amortization: 25, schedule: 26, rate: 145, price: 200_000_000, down: 100_000_000, expected: 183_454 }, # no ins
       { amortization: 25, schedule: 12, rate: 145, price: 200_000_000, down: 100_000_000, expected: 397_591 } # no ins
     ].each do |fixture|

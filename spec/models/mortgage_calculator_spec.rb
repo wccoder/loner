@@ -79,4 +79,10 @@ RSpec.describe MortgageCalculator, type: :model do
       end
     end
   end
+
+  context 'when calculate_value is not implemented' do
+    it 'raises an exception' do
+      expect { subject.calculated_value }.to raise_error(RuntimeError)
+    end
+  end
 end

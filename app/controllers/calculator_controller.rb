@@ -9,27 +9,11 @@ class CalculatorController < ApplicationController
   end
 
   def payment_amount
-    params = payment_amount_params
-    params[:interest_rate] = InterestRate.get
-    calculator = PaymentAmountCalculator.new(params)
-
-    if calculator.valid?
-      success({ payment_amount: calculator.payment_amount })
-    else
-      error(calculator.errors)
-    end
+    perform_calculation(class_to_use: PaymentAmountCalculator, params_to_use: payment_amount_params)
   end
 
   def mortgage_amount
-    params = mortgage_amount_params
-    params[:interest_rate] = InterestRate.get
-    calculator = MortgageAmountCalculator.new(params)
-
-    if calculator.valid?
-      success({ maximum_mortgage: calculator.maximum_mortgage })
-    else
-      error(calculator.errors)
-    end
+    perform_calculation(class_to_use: MortgageAmountCalculator, params_to_use: mortgage_amount_params)
   end
 
   def interest_rate
@@ -41,6 +25,18 @@ class CalculatorController < ApplicationController
   end
 
   private
+
+  def perform_calculation(class_to_use:, params_to_use:)
+    params = self.params.permit(params_to_use)
+    params[:interest_rate] = InterestRate.get
+    calculator = class_to_use.new(params)
+
+    if calculator.valid?
+      success({ calculated_value: calculator.calculated_value })
+    else
+      error(calculator.errors)
+    end
+  end
 
   def success(payload = {})
     render json: { status: STATUS_OK }.merge(payload)
@@ -56,10 +52,10 @@ class CalculatorController < ApplicationController
   end
 
   def payment_amount_params
-    params.permit(common_params + %i[asking_price down_payment])
+    common_params + %i[asking_price down_payment]
   end
 
   def mortgage_amount_params
-    params.permit(common_params + [:payment_amount])
+    common_params + [:payment_amount]
   end
 end

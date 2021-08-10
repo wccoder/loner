@@ -4,14 +4,22 @@ class MortgageCalculator
   include ActiveModel::Model
   include ActiveModel::Validations::Callbacks
 
+  DOWN_PAYMENT_FIRST_LIMIT      = 50_000_000 # $500,000 in cents
+  DOWN_PAYMENT_REST_PERCENTAGE  = 1000 # 10.00%
   DOWN_PAYMENT_MIN_PERCENTAGE   = 500 # 5.00%
+
   AMORTIZATION_MIN              = 5
   AMORTIZATION_MAX              = 25
+
   VALID_PAYMENT_SCHEDULES       = [12, 26, 52].freeze
+
   VALUE_MAX                     = 99_900_000_000 # $999 million in cents
   VALUE_MIN                     = 100 # minimum of $1 in cents
+
   INTEREST_RATE_MIN             = 1      # 0.01%
   INTEREST_RATE_MAX             = 10_000 # 100.00%
+
+  SCALING_FACTOR                = 100.0 * 100.0
 
   # @TODO: Stick this in a yaml/config file somewhere
   INSURANCE_RATES = [
@@ -39,7 +47,8 @@ class MortgageCalculator
   validate :validate_payment_schedule
 
   def self.insurance_rate(asking, down)
-    insurance_rate_for_percentage(((down.to_f / asking) * 100.0 * 100.0).to_i)
+    integer_percentage = decimal_percentage_to_integer(down.to_d / asking.to_d)
+    insurance_rate_for_percentage(integer_percentage)
   end
 
   def self.insurance_rate_for_percentage(percentage)
@@ -49,12 +58,25 @@ class MortgageCalculator
     0
   end
 
+  def self.decimal_percentage_to_integer(percentage)
+    (BigDecimal(percentage) * SCALING_FACTOR).to_i
+  end
+
+  def self.integer_percentage_to_decimal(percentage)
+    BigDecimal(percentage) / SCALING_FACTOR
+  end
+
+  def calculated_value
+    raise 'calculated_value needs to be implemented'
+  end
+
   private
 
   # formula from: https://www.wikihow.com/Calculate-Mortgage-Payments
   def compounded_interest_factor
-    one_plus_r_exp = ((1.0 + interest_per_period)**total_payments)
-    (interest_per_period * one_plus_r_exp) / (one_plus_r_exp - 1.0)
+    one_plus_r_exp = BigDecimal((1.0 + interest_per_period))
+    one_plus_r_exp = one_plus_r_exp.power(total_payments.to_i)
+    BigDecimal((interest_per_period * one_plus_r_exp) / (one_plus_r_exp - 1.0))
   end
 
   def total_payments
@@ -62,11 +84,7 @@ class MortgageCalculator
   end
 
   def interest_per_period
-    (integer_percentage_to_decimal(interest_rate) / payment_schedule.to_d)
-  end
-
-  def integer_percentage_to_decimal(percentage)
-    (percentage.to_d / (100.0 * 100.0))
+    BigDecimal(MortgageCalculator.integer_percentage_to_decimal(interest_rate) / BigDecimal(payment_schedule))
   end
 
   def validate_payment_schedule

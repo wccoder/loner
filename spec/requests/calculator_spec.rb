@@ -98,10 +98,45 @@ RSpec.describe 'Calculators', type: :request do
           down_payment: 100_000_000
         }
       expected = {
-        'payment_amount' => 448_616
+        'calculated_value' => 448_616
       }
 
       it_behaves_like 'a successful request', :get, '/payment-amount', params, expected
+    end
+  end
+
+  describe 'GET /mortgage-amount' do
+    before(:all) { Rails.cache.delete(InterestRate::RATE_KEY) }
+
+    context 'when a required parameter is missing' do
+      params =
+        {
+          payment_schedule: 12,
+          amortization_period: 25,
+          payment_amount: 12_345
+        }
+
+      %i[
+        payment_schedule
+        amortization_period
+        payment_amount
+      ].each do |missing|
+        it_behaves_like 'a failed request', :get, '/mortgage-amount', params.except(missing)
+      end
+    end
+
+    context 'when all parameters are sent' do
+      params =
+        {
+          payment_schedule: 12,
+          amortization_period: 25,
+          payment_amount: 428_042
+        }
+      expected = {
+        'calculated_value' => 99_999_988, # within $0.12 over 300 payments
+      }
+
+      it_behaves_like 'a successful request', :get, '/mortgage-amount', params, expected
     end
   end
 end
